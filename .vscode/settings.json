@@ -19,6 +19,16 @@
             "username": "user",
             "password": "password",
             "database": "mydatabase"
+        },
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "LocalPSQL",
+            "username": "myuser",
+            "database": "mydb",
+            "password": "mypassword"
         }
     ]
 }

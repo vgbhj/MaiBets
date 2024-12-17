@@ -8,7 +8,7 @@ import (
 )
 
 type Event struct {
-	ID     int       `json:"id" gorm:"primary_key"`
+	ID     int       `json:"id" gorm:"primary_key"` // юзаем только для GET
 	Name   string    `json:"name" gorm:"not null"`
 	Desc   string    `json:"description"`
 	Date   time.Time `json:"date" gorm:"not null"`
@@ -28,8 +28,8 @@ func AddEvent(data map[string]interface{}) error {
 		Status: data["status"].(string),
 	}
 
-	_, err := dbConn.Exec("INSERT INTO event (id, name, description, date, status) VALUES ($1, $2, $3, $4, $5)",
-		event.ID, event.Name, event.Desc, event.Date, event.Status)
+	_, err := dbConn.Exec("INSERT INTO event (name, description, date, status) VALUES ($1, $2, $3, $4)",
+		event.Name, event.Desc, event.Date, event.Status)
 	if err != nil {
 		return err
 	}
@@ -56,4 +56,23 @@ func GetEvent(id int) (*Event, error) {
 	}
 
 	return &event, nil
+}
+
+// GetEventIDByName получает ID события по его имени
+func GetEventIDByName(name string) (int, error) {
+	dbConn := db.ConnectDB() // Получаем соединение с базой данных
+	defer dbConn.Close()
+
+	var eventID int
+
+	err := dbConn.QueryRow("SELECT id FROM event WHERE name = $1", name).Scan(&eventID)
+	if err != nil {
+		// Выводим ошибку в лог
+		fmt.Println("Error retrieving event ID by name:", err)
+
+		// Возвращаем ошибку
+		return 0, err
+	}
+
+	return eventID, nil
 }
