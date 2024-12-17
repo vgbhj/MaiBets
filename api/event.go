@@ -94,3 +94,33 @@ func GetEvent(c *gin.Context) {
 
 	c.JSON(http.StatusOK, event)
 }
+
+func GetEvents(c *gin.Context) {
+	db := db.ConnectDB()
+	defer db.Close()
+
+	// Получаем все ивенты
+	rows, err := db.Query("SELECT id, name, description, date, status  FROM event") // Предполагается, что у вас есть таблица events
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not retrieve events", "details": err.Error()})
+		return
+	}
+	defer rows.Close()
+
+	var events []models.Event
+	for rows.Next() {
+		var event models.Event
+		if err := rows.Scan(&event.ID, &event.Name, &event.Desc, &event.Date, &event.Status); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not scan event", "details": err.Error()})
+			return
+		}
+		events = append(events, event)
+	}
+
+	if err := rows.Err(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error occurred during rows iteration", "details": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, events)
+}
