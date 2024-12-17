@@ -5,21 +5,20 @@
             "server": "localhost",
             "port": 5432,
             "driver": "PostgreSQL",
-            "name": "ArucoService",
+            "name": "InternetStore",
             "database": "InternetStore",
             "username": "root",
-            "password": "qwerty",
-            "connectionTimeout": 30
+            "password": "qwerty"
         },
         {
             "previewLimit": 50,
             "server": "localhost",
             "port": 5432,
             "driver": "PostgreSQL",
-            "name": "pgql",
-            "database": "mydb",
-            "username": "myuser",
-            "password": "mypassword"
+            "name": "MaiBets",
+            "username": "user",
+            "password": "password",
+            "database": "mydatabase"
         }
     ]
 }
