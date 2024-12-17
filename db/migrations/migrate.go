@@ -20,9 +20,10 @@ func main() {
 	_, err := dbConn.Exec(`
 	CREATE TABLE IF NOT EXISTS users (
 		id SERIAL PRIMARY KEY,
+		username VARCHAR(255) NOT NULL UNIQUE,
+		password VARCHAR(255) NOT NULL,
 		first_name VARCHAR(255),
 		last_name VARCHAR(255),
-		email VARCHAR(255) NOT NULL UNIQUE,
 		phone VARCHAR(50),
 		balance DECIMAL DEFAULT 0,
 		access INTEGER REFERENCES access(id)

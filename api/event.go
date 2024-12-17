@@ -10,7 +10,7 @@ import (
 	"github.com/vgbhj/MaiBets/service/event_service"
 )
 
-// AddMaterialHandler обрабатывает HTTP-запрос на добавление материала
+// AddMaterialHandler обрабатывает HTTP-запрос на добавление ивента
 func AddEvent(c *gin.Context) {
 	var event models.Event
 
