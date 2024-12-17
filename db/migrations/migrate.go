@@ -16,26 +16,26 @@ func main() {
 	dbConn := db.ConnectDB() // Получаем соединение с базой данных
 	defer dbConn.Close()     // Закрываем соединение после завершения работы
 
-	// // Удаление таблиц в обратном порядке их создания
-	// tables := []string{
-	// 	"payment",
-	// 	"bet",
-	// 	"odd",
-	// 	"bet_type",
-	// 	"event",
-	// 	"users",
-	// 	"access",
-	// }
+	// Удаление таблиц в обратном порядке их создания
+	tables := []string{
+		"payment",
+		"bet",
+		"odd",
+		"bet_type",
+		"event",
+		"users",
+		"access",
+	}
 
-	// for _, table := range tables {
-	// 	_, err := dbConn.Exec("DROP TABLE IF EXISTS " + table + " CASCADE;")
-	// 	if err != nil {
-	// 		log.Fatalf("Failed to drop table %s: %v", table, err)
-	// 	}
-	// 	log.Printf("Table %s dropped successfully.", table)
-	// }
+	for _, table := range tables {
+		_, err := dbConn.Exec("DROP TABLE IF EXISTS " + table + " CASCADE;")
+		if err != nil {
+			log.Fatalf("Failed to drop table %s: %v", table, err)
+		}
+		log.Printf("Table %s dropped successfully.", table)
+	}
 
-	// log.Println("All tables dropped successfully.")
+	log.Println("All tables dropped successfully.")
 
 	// Миграция для таблицы access
 	_, err := dbConn.Exec(`
@@ -59,7 +59,7 @@ func main() {
 		last_name VARCHAR(255),
 		phone VARCHAR(50),
 		balance DECIMAL DEFAULT 100,
-		access INT
+		access_level INTEGER NOT NULL
 	);
 	`)
 	if err != nil {
@@ -160,8 +160,9 @@ func main() {
 
 	// Добавление записи администратора в таблицу users
 	_, err = dbConn.Exec(`
-	INSERT INTO users (username, password)
+	INSERT INTO users (access_level, username, password)
 	VALUES(
+ 		(SELECT id FROM access WHERE name = 'admin'),
 		'admin', 
 		'$2a$10$YgzepzPAE0OZWr9P6mQVu.Ind9xcSN/DGCfOiVT8XClxWjWLWbfpa'
 	);`)

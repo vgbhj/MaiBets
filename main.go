@@ -21,12 +21,11 @@ func main() {
 	router := gin.Default()
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	router.POST("/api/auth/signup", api.CreateUser)
-	router.POST("/api/auth/login", api.Login)
+	router.POST("/api/signup", api.CreateUser)
+	router.POST("/api/login", api.Login)
 	router.POST("/api/event", api.AddEvent)
 	router.GET("/api/event/:id", api.GetEvent)
 	router.GET("/api/events", api.GetEvents)
-	// router.GET("/user/profile", middlewares.CheckAuth, controllers.GetUserProfile)
 	router.POST("/api/bet", middleware.CheckAuth, api.AddBet)
 	router.GET("/api/bets", middleware.CheckAuth, api.GetBets)
 

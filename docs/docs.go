@@ -283,7 +283,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/register": {
+        "/api/signup": {
             "post": {
                 "description": "Create a new user with a username and password",
                 "consumes": [

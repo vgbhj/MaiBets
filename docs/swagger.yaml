@@ -283,7 +283,7 @@ paths:
       summary: Login
       tags:
       - auth
-  /api/register:
+  /api/signup:
     post:
       consumes:
       - application/json

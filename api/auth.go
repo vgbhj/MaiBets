@@ -43,7 +43,7 @@ type TokenResponse struct {
 // @Success 200 {object} SuccessResponse "User created successfully"
 // @Failure 400 {object} ErrorResponse "Username already exists or invalid input"
 // @Failure 500 {object} ErrorResponse "Internal server error"
-// @Router /api/register [post]
+// @Router /api/signup [post]
 func CreateUser(c *gin.Context) {
 	var authInput AuthInput
 
@@ -68,7 +68,7 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	_, err = db.Exec("INSERT INTO users (username, password) VALUES ($1, $2)", authInput.Username, string(passwordHash))
+	_, err = db.Exec("INSERT INTO users (username, password, access_level) VALUES ($1, $2, 1)", authInput.Username, string(passwordHash))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Could not create user", Details: err.Error()})
 		return
