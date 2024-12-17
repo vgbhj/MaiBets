@@ -51,9 +51,9 @@ func AddEvent(c *gin.Context) {
 	eventID, err := models.GetEventIDByName(eventName)
 	if err != nil {
 		// Обработка ошибки
+		c.JSON(http.StatusBadRequest, gin.H{"GetEventIDByName error": err.Error()})
 		fmt.Println("Error:", err)
-	} else {
-		fmt.Println("Event ID:", eventID)
+		return
 	}
 
 	odd := models.Odd{

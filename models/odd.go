@@ -20,7 +20,6 @@ func AddOdd(data map[string]interface{}) error {
 	defer dbConn.Close()
 
 	odd := Odd{
-		ID:        data["id"].(int),
 		OddValue:  data["odd_value"].(float64),
 		EventID:   data["event_id"].(int),
 		UpdatedAt: time.Now(), // Устанавливаем текущее время
@@ -54,4 +53,22 @@ func GetOdd(id int) (*Odd, error) {
 	}
 
 	return &odd, nil
+}
+
+func GetOddIDByEventId(id int) (int, error) {
+	dbConn := db.ConnectDB() // Получаем соединение с базой данных
+	defer dbConn.Close()
+
+	var oddID int
+
+	err := dbConn.QueryRow("SELECT id FROM odd WHERE event_id = $1", id).Scan(&oddID)
+	if err != nil {
+		// Выводим ошибку в лог
+		fmt.Println("Error retrieving event ID by name:", err)
+
+		// Возвращаем ошибку
+		return 0, err
+	}
+
+	return oddID, nil
 }

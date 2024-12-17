@@ -5,6 +5,7 @@ import (
 	"github.com/vgbhj/MaiBets/api"
 	"github.com/vgbhj/MaiBets/config"
 	"github.com/vgbhj/MaiBets/db"
+	"github.com/vgbhj/MaiBets/middleware"
 )
 
 func init() {
@@ -16,10 +17,11 @@ func init() {
 func main() {
 	router := gin.Default()
 
-	router.POST("/auth/signup", api.CreateUser)
-	router.POST("/auth/login", api.Login)
-	router.POST("/event", api.AddEvent)
-	router.GET("/event/:id", api.GetEvent)
+	router.POST("/api/auth/signup", api.CreateUser)
+	router.POST("/api/auth/login", api.Login)
+	router.POST("/api/event", api.AddEvent)
+	router.GET("/api/event/:id", api.GetEvent)
 	// router.GET("/user/profile", middlewares.CheckAuth, controllers.GetUserProfile)
+	router.POST("/api/bet", middleware.CheckAuth, api.AddBet)
 	router.Run()
 }

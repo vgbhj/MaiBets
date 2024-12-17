@@ -16,9 +16,9 @@ func AddEvent(event models.Event) error {
 }
 
 func GetEvent(id int) (*models.Event, error) {
-	material, err := models.GetEvent(id)
+	event, err := models.GetEvent(id)
 	if err != nil {
 		return nil, err
 	}
-	return material, nil
+	return event, nil
 }

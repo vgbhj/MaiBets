@@ -16,8 +16,41 @@ func main() {
 	dbConn := db.ConnectDB() // Получаем соединение с базой данных
 	defer dbConn.Close()     // Закрываем соединение после завершения работы
 
-	// Миграция для таблицы user
+	// // Удаление таблиц в обратном порядке их создания
+	// tables := []string{
+	// 	"payment",
+	// 	"bet",
+	// 	"odd",
+	// 	"bet_type",
+	// 	"event",
+	// 	"users",
+	// 	"access",
+	// }
+
+	// for _, table := range tables {
+	// 	_, err := dbConn.Exec("DROP TABLE IF EXISTS " + table + " CASCADE;")
+	// 	if err != nil {
+	// 		log.Fatalf("Failed to drop table %s: %v", table, err)
+	// 	}
+	// 	log.Printf("Table %s dropped successfully.", table)
+	// }
+
+	// log.Println("All tables dropped successfully.")
+
+	// Миграция для таблицы access
 	_, err := dbConn.Exec(`
+	CREATE TABLE IF NOT EXISTS access (
+		id SERIAL PRIMARY KEY,
+		name VARCHAR(255) NOT NULL,
+		description TEXT
+	);
+	`)
+	if err != nil {
+		log.Fatal("Migration for access failed:", err)
+	}
+
+	// Миграция для таблицы user
+	_, err = dbConn.Exec(`
 	CREATE TABLE IF NOT EXISTS users (
 		id SERIAL PRIMARY KEY,
 		username VARCHAR(255) NOT NULL UNIQUE,
@@ -25,7 +58,7 @@ func main() {
 		first_name VARCHAR(255),
 		last_name VARCHAR(255),
 		phone VARCHAR(50),
-		balance DECIMAL DEFAULT 0,
+		balance DECIMAL DEFAULT 100,
 		access INTEGER REFERENCES access(id)
 	);
 	`)
@@ -45,18 +78,6 @@ func main() {
 	`)
 	if err != nil {
 		log.Fatal("Migration for event failed:", err)
-	}
-
-	// Миграция для таблицы access
-	_, err = dbConn.Exec(`
-	CREATE TABLE IF NOT EXISTS access (
-		id SERIAL PRIMARY KEY,
-		name VARCHAR(255) NOT NULL,
-		description TEXT
-	);
-	`)
-	if err != nil {
-		log.Fatal("Migration for access failed:", err)
 	}
 
 	// Добавление двух записей: casual и admin
@@ -135,6 +156,18 @@ func main() {
 	`)
 	if err != nil {
 		log.Fatal("Migration for payment failed:", err)
+	}
+
+	// Добавление записи администратора в таблицу users
+	_, err = dbConn.Exec(`
+	INSERT INTO users (access, username, password)
+	VALUES(
+		(select id from access where name = 'administrator'),
+		'admin', 
+		'$2a$10$YgzepzPAE0OZWr9P6mQVu.Ind9xcSN/DGCfOiVT8XClxWjWLWbfpa'
+	);`)
+	if err != nil {
+		log.Fatal("Inserting admin user failed:", err)
 	}
 
 	log.Println("Migrations completed successfully.")
