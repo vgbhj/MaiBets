@@ -17,14 +17,14 @@ func CheckAuth(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 
 	if authHeader == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "A"})
+		c.JSON(http.StatusUnauthorized, models.ErrorResponse{Error: "A"})
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
 	authToken := strings.Split(authHeader, " ")
 	if len(authToken) != 2 || authToken[0] != "Bearer" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token format"})
+		c.JSON(http.StatusUnauthorized, models.ErrorResponse{Error: "Invalid token format"})
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
@@ -38,20 +38,20 @@ func CheckAuth(c *gin.Context) {
 	})
 
 	if err != nil || !token.Valid {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
+		c.JSON(http.StatusUnauthorized, models.ErrorResponse{Error: "Invalid or expired token"})
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		c.JSON(http.StatusUnauthorized, models.ErrorResponse{Error: "Invalid token"})
 		c.Abort()
 		return
 	}
 
 	if float64(time.Now().Unix()) > claims["exp"].(float64) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "token expired"})
+		c.JSON(http.StatusUnauthorized, models.ErrorResponse{Error: "Token expired"})
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}

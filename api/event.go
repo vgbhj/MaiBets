@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"math/rand/v2"
 	"net/http"
 	"strconv"
@@ -14,72 +13,82 @@ import (
 	"github.com/vgbhj/MaiBets/service/odd_service"
 )
 
-// AddMaterialHandler обрабатывает HTTP-запрос на добавление ивента
+// @Summary AddEvent
+// @Description Add a new event
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param event body models.Event true "Event"
+// @Success 200 {object} models.SuccessResponse "Event added successfully"
+// @Failure 400 {object} models.ErrorResponse "Invalid input"
+// @Failure 500 {object} models.ErrorResponse "Internal server error"
+// @Router /api/event [post]
+// AddEvent обрабатывает HTTP-запрос на добавление события
 func AddEvent(c *gin.Context) {
 	var event models.Event
 
 	if err := c.ShouldBindJSON(&event); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input", Details: err.Error()})
 		return
 	}
-
-	// NO TAK NELZUA DELAT
 
 	db := db.ConnectDB()
 	defer db.Close()
 	var eventCount int
-	err := db.QueryRow("SELECT COUNT(*) FROM users WHERE username = $1", event.Name).Scan(&eventCount)
-	if eventCount > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "event name already used"})
-		return
-	}
+	err := db.QueryRow("SELECT COUNT(*) FROM event WHERE name = $1", event.Name).Scan(&eventCount)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not check event name in database", "details": err.Error()})
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Could not check event name in database", Details: err.Error()})
 		return
 	}
 
-	// Вызов функции сервиса для добавления ивента
+	if eventCount > 0 {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Event name already used"})
+		return
+	}
+
+	// Вызов функции сервиса для добавления события
 	if err := event_service.AddEvent(event); err != nil {
-		// Выводим текст ошибки в лог (опционально)
-		fmt.Println("Error adding event:", err)
-
-		// Возвращаем ошибку в ответе
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not save event to database", "details": err.Error()})
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Could not save event to database", Details: err.Error()})
 		return
 	}
+
 	eventName := event.Name
 	eventID, err := models.GetEventIDByName(eventName)
 	if err != nil {
-		// Обработка ошибки
-		c.JSON(http.StatusBadRequest, gin.H{"GetEventIDByName error": err.Error()})
-		fmt.Println("Error:", err)
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "GetEventIDByName error", Details: err.Error()})
 		return
 	}
 
 	odd := models.Odd{
 		ID:        eventID,
-		OddValue:  rand.Float64() * 2, // Генерируем случайное значение от 0 до 2
-		EventID:   eventID,            // Ссылка на событие
-		UpdatedAt: time.Now(),         // Устанавливаем текущее время
+		OddValue:  rand.Float64() * 2, // Генерация случайного коэффициента от 0 до 2
+		EventID:   eventID,            // Привязка к событию
+		UpdatedAt: time.Now(),
 	}
 
-	// Вызов функции сервиса для добавления кефа
+	// Добавление коэффициента
 	if err := odd_service.AddOdd(odd); err != nil {
-		// Выводим текст ошибки в лог (опционально)
-		fmt.Println("Error adding event:", err)
-
-		// Возвращаем ошибку в ответе
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not save odd to database", "details": err.Error()})
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Could not save odd to database", Details: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Event added successfully"})
+	c.JSON(http.StatusOK, models.SuccessResponse{Message: "Event added successfully"})
 }
 
+// @Summary GetEvent
+// @Description Retrieve a single event by its ID
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param id path int true "Event ID"
+// @Success 200 {object} models.Event "Event details"
+// @Failure 400 {object} models.ErrorResponse "Invalid event ID"
+// @Failure 500 {object} models.ErrorResponse "Could not retrieve event"
+// @Router /api/event/{id} [get]
 func GetEvent(c *gin.Context) {
 	idStr := c.Param("id") // Получаем ID из параметров URL
 
-	// Преобразуем строку в int
+	// Преобразование строки в int
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
@@ -95,12 +104,19 @@ func GetEvent(c *gin.Context) {
 	c.JSON(http.StatusOK, event)
 }
 
+// @Summary GetEvents
+// @Description Retrieve all events
+// @Tags events
+// @Accept json
+// @Produce json
+// @Success 200 {array} models.Event "List of events"
+// @Failure 500 {object} models.ErrorResponse "Could not retrieve events"
+// @Router /api/events [get]
 func GetEvents(c *gin.Context) {
 	db := db.ConnectDB()
 	defer db.Close()
 
-	// Получаем все ивенты
-	rows, err := db.Query("SELECT id, name, description, date, status  FROM event") // Предполагается, что у вас есть таблица events
+	rows, err := db.Query("SELECT id, name, description, date, status FROM event")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not retrieve events", "details": err.Error()})
 		return

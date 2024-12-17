@@ -8,11 +8,12 @@ import (
 )
 
 type Event struct {
-	ID     int       `json:"id" gorm:"primary_key"` // юзаем только для GET
-	Name   string    `json:"name" gorm:"not null"`
-	Desc   string    `json:"description"`
-	Date   time.Time `json:"date" gorm:"not null"`
-	Status string    `json:"status"`
+	// юзаем только в GET запросах
+	ID     int       `json:"id" gorm:"primary_key"`
+	Name   string    `json:"name" gorm:"not null" example:"Champions League Final"`
+	Desc   string    `json:"description" example:"Final match of the 2024 Champions League"`
+	Date   time.Time `json:"date" gorm:"not null" example:"2024-06-01T20:00:00Z"`
+	Status string    `json:"status" example:"live"`
 }
 
 // AddEvent добавляет новое событие в базу данных
@@ -21,7 +22,6 @@ func AddEvent(data map[string]interface{}) error {
 	defer dbConn.Close()
 
 	event := Event{
-		ID:     data["id"].(int),
 		Name:   data["name"].(string),
 		Desc:   data["desc"].(string),
 		Date:   data["date"].(time.Time),

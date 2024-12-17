@@ -1,0 +1,316 @@
+definitions:
+  api.AuthInput:
+    properties:
+      password:
+        example: password123
+        type: string
+      username:
+        example: johndoe
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  api.BetInput:
+    properties:
+      bet_amount:
+        example: 10.1
+        type: number
+      bet_date:
+        example: "2024-06-01T20:00:00Z"
+        type: string
+      name:
+        example: Champions League Final
+        type: string
+    type: object
+  api.ErrorResponse:
+    properties:
+      details:
+        example: Optional detailed error message
+        type: string
+      error:
+        example: Description of the error
+        type: string
+    type: object
+  api.SuccessResponse:
+    properties:
+      message:
+        example: User created successfully
+        type: string
+    type: object
+  api.TokenResponse:
+    properties:
+      token:
+        example: your_jwt_token_here
+        type: string
+    type: object
+  models.Bet:
+    properties:
+      bet_amount:
+        description: Сумма ставки
+        type: number
+      bet_date:
+        description: Дата ставки
+        type: string
+      bet_type_id:
+        description: Идентификатор типа ставки
+        type: integer
+      client_id:
+        description: Идентификатор клиента
+        type: integer
+      event_id:
+        description: Идентификатор события
+        type: integer
+      id:
+        description: Идентификатор ставки
+        type: integer
+      odd_id:
+        description: Идентификатор коэффициента (ссылка на Odd)
+        type: integer
+      status:
+        description: Статус ставки (например, pending, won, lost)
+        type: string
+    type: object
+  models.ErrorResponse:
+    properties:
+      details:
+        example: Error details here
+        type: string
+      error:
+        example: Invalid input
+        type: string
+    type: object
+  models.Event:
+    properties:
+      date:
+        example: "2024-06-01T20:00:00Z"
+        type: string
+      description:
+        example: Final match of the 2024 Champions League
+        type: string
+      id:
+        description: юзаем только в GET запросах
+        type: integer
+      name:
+        example: Champions League Final
+        type: string
+      status:
+        example: live
+        type: string
+    type: object
+  models.SuccessResponse:
+    properties:
+      message:
+        example: Event added successfully
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /api/bet:
+    post:
+      consumes:
+      - application/json
+      description: Add a new bet for the current user
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Bet Details
+        in: body
+        name: bet
+        required: true
+        schema:
+          $ref: '#/definitions/api.BetInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Bet added successfully
+          schema:
+            $ref: '#/definitions/models.SuccessResponse'
+        "400":
+          description: Invalid input or insufficient balance
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: AddBet
+      tags:
+      - bets
+  /api/bets:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all bets for the current user
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of user bets
+          schema:
+            items:
+              $ref: '#/definitions/models.Bet'
+            type: array
+        "400":
+          description: Invalid user ID
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Could not retrieve bets
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: GetBets
+      tags:
+      - bets
+  /api/event:
+    post:
+      consumes:
+      - application/json
+      description: Add a new event
+      parameters:
+      - description: Event
+        in: body
+        name: event
+        required: true
+        schema:
+          $ref: '#/definitions/models.Event'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Event added successfully
+          schema:
+            $ref: '#/definitions/models.SuccessResponse'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: AddEvent
+      tags:
+      - events
+  /api/event/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a single event by its ID
+      parameters:
+      - description: Event ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Event details
+          schema:
+            $ref: '#/definitions/models.Event'
+        "400":
+          description: Invalid event ID
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Could not retrieve event
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: GetEvent
+      tags:
+      - events
+  /api/events:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all events
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of events
+          schema:
+            items:
+              $ref: '#/definitions/models.Event'
+            type: array
+        "500":
+          description: Could not retrieve events
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: GetEvents
+      tags:
+      - events
+  /api/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user and return a JWT token
+      parameters:
+      - description: User credentials
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/api.AuthInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: JWT token
+          schema:
+            $ref: '#/definitions/api.TokenResponse'
+        "400":
+          description: Invalid credentials
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Login
+      tags:
+      - auth
+  /api/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user with a username and password
+      parameters:
+      - description: User details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/api.AuthInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User created successfully
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Username already exists or invalid input
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: CreateUser
+      tags:
+      - auth
+swagger: "2.0"
