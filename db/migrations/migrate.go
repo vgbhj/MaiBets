@@ -59,7 +59,7 @@ func main() {
 		last_name VARCHAR(255),
 		phone VARCHAR(50),
 		balance DECIMAL DEFAULT 100,
-		access INTEGER REFERENCES access(id)
+		access INT
 	);
 	`)
 	if err != nil {
@@ -160,9 +160,8 @@ func main() {
 
 	// Добавление записи администратора в таблицу users
 	_, err = dbConn.Exec(`
-	INSERT INTO users (access, username, password)
+	INSERT INTO users (username, password)
 	VALUES(
-		(select id from access where name = 'administrator'),
 		'admin', 
 		'$2a$10$YgzepzPAE0OZWr9P6mQVu.Ind9xcSN/DGCfOiVT8XClxWjWLWbfpa'
 	);`)
