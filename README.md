@@ -24,47 +24,10 @@
 ## DB model
 ![dbmodel.png](docs/dbmodel.png)
 
-## Curl запросы
+## Api docs (swagger)
 
-* добавление ивента
+Для получение документации нужно запустить контейнер приложения
 ```bash
-curl -X POST http://localhost:8080/api/event \
--H "Content-Type: application/json" \
--H "Authorization: Bearer YOUR_JWT_TOKEN" \
--d '{
-    "name": "Название события",
-    "date": "2023-10-01T15:00:00Z",
-    "location": "Место проведения",
-    "description": "Описание события"
-}'
+docker-compose up --build
 ```
-
-* логин за админа
-```bash
-curl -X POST http://localhost:8080/api/auth/login \
--H "Content-Type: application/json" \
--d '{"username": "admin", "password": "admin"}'
-```
-
-* добавление ставки
-```bash
-curl -X POST http://localhost:8080/api/bet \
--H "Content-Type: application/json" \
--H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzQ1NDYzODksImlkIjo1fQ.AQOBJfxLfMmLsnyd6Wagkamz_gVWi2bjLhaUIp61f5s" \
--d '{
-    "name": "Название события",
-    "bet_amount": 10,
-    "bet_date": "2023-10-01T15:00:00Z"
-}'
-```
-
-* получение всех ставок
-```bash
-curl -X GET http://localhost:8080/api/bets \
--H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzQ1NDYzODksImlkIjo1fQ.AQOBJfxLfMmLsnyd6Wagkamz_gVWi2bjLhaUIp61f5s" 
-```
-
-* получение всех событий
-```bash
-curl -X GET http://localhost:8080/api/events
-```
+И перейти по: http://localhost:8080/swagger/index.htm
