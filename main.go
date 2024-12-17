@@ -23,5 +23,6 @@ func main() {
 	router.GET("/api/event/:id", api.GetEvent)
 	// router.GET("/user/profile", middlewares.CheckAuth, controllers.GetUserProfile)
 	router.POST("/api/bet", middleware.CheckAuth, api.AddBet)
+	router.GET("/api/bets", middleware.CheckAuth, api.GetBets)
 	router.Run()
 }

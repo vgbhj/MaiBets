@@ -103,3 +103,47 @@ func AddBet(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Bet added successfully"})
 }
+
+func GetBets(c *gin.Context) {
+	// получение пользователя с мидлваре
+	userId, exists := c.Get("currentUserId")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"user ID not found": exists})
+		return
+	}
+
+	// Преобразование userId в int
+	userIdInt, ok := userId.(int)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"user ID is not of type int": ok})
+		return
+	}
+
+	db := db.ConnectDB()
+	defer db.Close()
+
+	// Получаем все ставки пользователя
+	rows, err := db.Query("SELECT id, event_id, bet_amount, status, bet_date FROM bet WHERE client_id = $1", userIdInt)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not retrieve bets", "details": err.Error()})
+		return
+	}
+	defer rows.Close()
+
+	var bets []models.Bet
+	for rows.Next() {
+		var bet models.Bet
+		if err := rows.Scan(&bet.ID, &bet.EventID, &bet.BetAmount, &bet.Status, &bet.BetDate); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not scan bet", "details": err.Error()})
+			return
+		}
+		bets = append(bets, bet)
+	}
+
+	if err := rows.Err(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error occurred during rows iteration", "details": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, bets)
+}

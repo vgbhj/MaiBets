@@ -4,6 +4,7 @@
 - [x] Добавить в миграции создание таблицы
 - [x] При добавлении ивентов рандомно генерируются кефы
 - [x] Добавление ставки
+- [ ] При получении награды учитывать множитель ставки
 - [ ] Гет запросы на получение всех ставок пользователя
 - [ ] Гет запросы на получение всех ивентов
 - [ ] На стороне базы данных необходимо определить представления, триггеры, функции и хранимые процедуры,
@@ -55,4 +56,10 @@ curl -X POST http://localhost:8080/api/bet \
     "bet_amount": 10,
     "bet_date": "2023-10-01T15:00:00Z"
 }'
+```
+
+* получение всех ставок
+```bash
+curl -X GET http://localhost:8080/api/bets \
+-H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzQ1NDYzODksImlkIjo1fQ.AQOBJfxLfMmLsnyd6Wagkamz_gVWi2bjLhaUIp61f5s" 
 ```
