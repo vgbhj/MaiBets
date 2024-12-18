@@ -17,25 +17,25 @@ func main() {
 	defer dbConn.Close()     // Закрываем соединение после завершения работы
 
 	// Удаление таблиц в обратном порядке их создания
-	tables := []string{
-		"payment",
-		"bet",
-		"odd",
-		"bet_type",
-		"event",
-		"users",
-		"access",
-	}
+	// tables := []string{
+	// 	"payment",
+	// 	"bet",
+	// 	"odd",
+	// 	"bet_type",
+	// 	"event",
+	// 	"users",
+	// 	"access",
+	// }
 
-	for _, table := range tables {
-		_, err := dbConn.Exec("DROP TABLE IF EXISTS " + table + " CASCADE;")
-		if err != nil {
-			log.Fatalf("Failed to drop table %s: %v", table, err)
-		}
-		log.Printf("Table %s dropped successfully.", table)
-	}
+	// for _, table := range tables {
+	// 	_, err := dbConn.Exec("DROP TABLE IF EXISTS " + table + " CASCADE;")
+	// 	if err != nil {
+	// 		log.Fatalf("Failed to drop table %s: %v", table, err)
+	// 	}
+	// 	log.Printf("Table %s dropped successfully.", table)
+	// }
 
-	log.Println("All tables dropped successfully.")
+	// log.Println("All tables dropped successfully.")
 
 	// Миграция для таблицы access
 	_, err := dbConn.Exec(`
@@ -134,7 +134,7 @@ func main() {
 		client_id INTEGER REFERENCES users(id), -- Many bet to one client
 		event_id INTEGER REFERENCES event(id), -- Many bet to one event
 		bet_type_id INTEGER REFERENCES bet_type(id), -- Many bet to one bet type
-		odd_id INTEGER REFERENCES odd(id), 
+		odd_id INTEGER REFERENCES odd(id),
 		bet_amount DECIMAL,
 		status VARCHAR(50), -- e.g., pending, won, lost
 		bet_date TIMESTAMP
@@ -162,8 +162,8 @@ func main() {
 	_, err = dbConn.Exec(`
 	INSERT INTO users (access_level, username, password)
 	VALUES(
- 		(SELECT id FROM access WHERE name = 'admin'),
-		'admin', 
+		(SELECT id FROM access WHERE name = 'admin'),
+		'admin',
 		'$2a$10$YgzepzPAE0OZWr9P6mQVu.Ind9xcSN/DGCfOiVT8XClxWjWLWbfpa'
 	);`)
 	if err != nil {
