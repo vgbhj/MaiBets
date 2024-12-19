@@ -158,7 +158,6 @@
                 },
                 body: JSON.stringify({
                     date: eventDate.toISOString(),
-                    // data: new Date().toISOString(),
                     description: document.getElementById('event-description').value,
                     id: 0,
                     name: document.getElementById('event-name').value,
@@ -167,7 +166,8 @@
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
+                console.log(data.error)
+                if (data.error == undefined) {
                     alert('Event created successfully!');
                     location.reload(); // Reload the page to show the new event
                 } else {
