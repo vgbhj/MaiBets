@@ -55,13 +55,14 @@ func main() {
 		id SERIAL PRIMARY KEY,
 		username VARCHAR(255) NOT NULL UNIQUE,
 		password VARCHAR(255) NOT NULL,
-		first_name VARCHAR(255),
-		last_name VARCHAR(255),
-		phone VARCHAR(50),
+		first_name VARCHAR(255) DEFAULT 'Unknown',
+		last_name VARCHAR(255) DEFAULT 'Unknown',
+		phone VARCHAR(50) DEFAULT 'N/A',
 		balance DECIMAL DEFAULT 100,
 		access_level INTEGER NOT NULL
 	);
 	`)
+
 	if err != nil {
 		log.Fatal("Migration for users failed:", err)
 	}
@@ -76,8 +77,38 @@ func main() {
 		status VARCHAR(50) -- e.g., pending, live, finished
 	);
 	`)
+
 	if err != nil {
 		log.Fatal("Migration for event failed:", err)
+	}
+
+	// Создание функции для триггера
+	_, err = dbConn.Exec(`
+	CREATE OR REPLACE FUNCTION update_event_date()
+	RETURNS TRIGGER AS $$
+	BEGIN
+		IF NEW.date < NOW() THEN
+			UPDATE event SET date = NOW() + INTERVAL '1 minute' WHERE id = NEW.id;
+		END IF;
+		RETURN NEW;
+	END;
+	$$ LANGUAGE plpgsql;
+	`)
+
+	if err != nil {
+		log.Fatal("Creating function for event date update failed:", err)
+	}
+
+	// Создание триггера
+	_, err = dbConn.Exec(`
+	CREATE TRIGGER set_event_date_after_insert
+	AFTER INSERT ON event
+	FOR EACH ROW
+	EXECUTE FUNCTION update_event_date();
+	`)
+
+	if err != nil {
+		log.Fatal("Creating trigger for event date update failed:", err)
 	}
 
 	// Добавление двух записей: casual и admin

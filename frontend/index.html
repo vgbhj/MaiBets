@@ -25,11 +25,37 @@
                 <p>Loading events...</p>
             </div>
         </div>
+
+        <div id="admin-buttons" class="mt-4">
+            <!-- Button for adding events will be injected here for admin users -->
+        </div>
+
+        <!-- Add Event Form (hidden by default) -->
+        <div id="add-event-form" class="mt-4" style="display:none;">
+            <h3>Create a New Event</h3>
+            <form id="create-event-form">
+                <div class="mb-3">
+                    <label for="event-name" class="form-label">Event Name</label>
+                    <input type="text" class="form-control" id="event-name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="event-description" class="form-label">Event Description</label>
+                    <textarea class="form-control" id="event-description" rows="3" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="event-date" class="form-label">Event Date</label>
+                    <input type="datetime-local" class="form-control" id="event-date" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Event</button>
+            </form>
+        </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const authButtons = document.getElementById('auth-buttons');
+            const adminButtons = document.getElementById('admin-buttons');
+            const addEventForm = document.getElementById('add-event-form');
             const jwt = localStorage.getItem('jwt');
     
             if (jwt) {
@@ -38,6 +64,23 @@
                     <a href="/user_bets" class="btn btn-secondary me-2">My Bets</a>
                     <button class="btn btn-outline-primary" id="logout-btn" onclick="logout()">Logout</button>
                 `;
+                // Check if user is admin
+                fetch('/api/user/', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${jwt}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(user => {
+                    if (user.access_level === 2) {
+                        // Show the "Add Event" button if the user is an admin
+                        adminButtons.innerHTML = `
+                            <button class="btn btn-success" onclick="toggleAddEventForm()">Add Event</button>
+                        `;
+                    }
+                });
             } else {
                 // If no JWT token, show the Login button
                 authButtons.innerHTML = `
@@ -68,16 +111,51 @@
                     });
                 });
         });
+
+        function toggleAddEventForm() {
+            // Toggle visibility of the Add Event form
+            const form = document.getElementById('add-event-form');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
     
+        // Handle the form submission for creating an event
+        document.getElementById('create-event-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const eventData = {
+                name: document.getElementById('event-name').value,
+                description: document.getElementById('event-description').value,
+                date: document.getElementById('event-date').value
+            };
+
+            const jwt = localStorage.getItem('jwt');
+            fetch('/api/event', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${jwt}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ event: eventData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Event created successfully!');
+                    location.reload(); // Reload the page to show the new event
+                } else {
+                    alert('Error creating event: ' + data.error);
+                }
+            });
+        });
+
         function redirectToEvent(eventId) {
             window.location.href = `/event/${eventId}`;
         }
-    
+
         function logout() {
             localStorage.removeItem('jwt');
             window.location.href = '/login';
         }
     </script>
-    
 </body>
 </html>

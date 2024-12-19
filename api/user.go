@@ -3,7 +3,6 @@ package api
 import (
 	"database/sql"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/vgbhj/MaiBets/models"
@@ -22,17 +21,17 @@ import (
 // @Router /api/user/ [get]
 // GetUser обрабатывает HTTP-запрос на получение информации о пользователе
 func GetUser(c *gin.Context) {
-	// Получение userId из параметров запроса
-	userId := c.Param("userId")
-	if userId == "" {
-		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "User ID not provided"})
+	// получение пользователя с мидлваре
+	userId, exists := c.Get("currentUserId")
+	if !exists {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "User ID not found"})
 		return
 	}
 
 	// Преобразование userId в int
-	userIdInt, err := strconv.Atoi(userId)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid user ID"})
+	userIdInt, ok := userId.(int)
+	if !ok {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "User ID is not of type int"})
 		return
 	}
 
