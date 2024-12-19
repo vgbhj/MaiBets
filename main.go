@@ -34,19 +34,31 @@ func main() {
 		c.HTML(200, "login.html", nil)
 	})
 
-	router.GET("/user_bets", middleware.CheckAuth, func(c *gin.Context) {
+	router.GET("/user_bets", func(c *gin.Context) {
 		c.HTML(200, "user_bets.html", nil)
+	})
+
+	router.GET("/event/:id", func(c *gin.Context) {
+		eventID := c.Param("id")
+		c.HTML(200, "event.html", gin.H{
+			"EventID": eventID,
+		})
 	})
 
 	// API routes
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	router.POST("/api/signup", api.CreateUser)
 	router.POST("/api/login", api.Login)
+
 	router.POST("/api/event", api.AddEvent)
 	router.GET("/api/event/:id", api.GetEvent)
 	router.GET("/api/events", api.GetEvents)
+
 	router.POST("/api/bet", middleware.CheckAuth, api.AddBet)
 	router.GET("/api/bets", middleware.CheckAuth, api.GetBets)
+
+	router.GET("/api/user", middleware.CheckAuth, api.GetUser)
 
 	// Run the server
 	router.Run()

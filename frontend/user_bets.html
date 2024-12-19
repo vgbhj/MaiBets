@@ -11,13 +11,16 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container">
             <a class="navbar-brand" href="#">MaiBets</a>
-            <button class="btn btn-outline-primary" onclick="logout()">Logout</button>
+            <div class="d-flex">
+                <a href="/" class="btn btn-outline-secondary me-2">Home</a>
+                <button class="btn btn-outline-primary" onclick="logout()">Logout</button>
+            </div>
         </div>
     </nav>
 
     <div class="container mt-5">
         <h1 class="mb-4">My Bets</h1>
-        <div id="bets-container"></div>
+        <div id="bets-container" class="row"></div>
     </div>
 
     <script>
@@ -39,17 +42,38 @@
                 .then(data => {
                     const container = document.getElementById('bets-container');
                     container.innerHTML = '';
+
+                    if (data.length === 0) {
+                        container.innerHTML = `
+                            <div class="col-12 text-center">
+                                <p class="text-muted">You have no bets yet. Start betting to see them here!</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
                     data.forEach(bet => {
                         const betCard = `
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <h5 class="card-title">${bet.name}</h5>
-                                    <p class="card-text">Amount: $${bet.bet_amount}</p>
-                                    <p class="card-text"><small class="text-muted">Date: ${new Date(bet.bet_date).toLocaleString()}</small></p>
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card mb-3 shadow-sm">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-primary">${bet.name}</h5>
+                                        <p class="card-text">Amount: <strong>$${bet.bet_amount.toFixed(2)}</strong></p>
+                                        <p class="card-text text-muted">Date: ${new Date(bet.bet_date).toLocaleString()}</p>
+                                    </div>
                                 </div>
                             </div>`;
                         container.innerHTML += betCard;
                     });
+                })
+                .catch(error => {
+                    const container = document.getElementById('bets-container');
+                    container.innerHTML = `
+                        <div class="col-12 text-center text-danger">
+                            <p>Failed to load bets. Please try again later.</p>
+                        </div>
+                    `;
+                    console.error('Error fetching bets:', error);
                 });
         });
 

@@ -104,6 +104,27 @@ definitions:
         example: Event added successfully
         type: string
     type: object
+  models.User:
+    properties:
+      access_level:
+        type: integer
+      balance:
+        type: number
+      createdAt:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      username:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -313,4 +334,37 @@ paths:
       summary: CreateUser
       tags:
       - auth
+  /api/user/:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve user information by ID
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User information
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Invalid user ID
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Could not retrieve user
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: GetUser
+      tags:
+      - users
 swagger: "2.0"

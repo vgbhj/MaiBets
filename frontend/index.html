@@ -11,7 +11,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container">
             <a class="navbar-brand" href="#">MaiBets</a>
-            <div id="auth-buttons">
+            <div id="auth-buttons" class="d-flex align-items-center">
                 <!-- Authentication buttons will be injected here -->
             </div>
         </div>
@@ -31,10 +31,11 @@
         document.addEventListener('DOMContentLoaded', () => {
             const authButtons = document.getElementById('auth-buttons');
             const jwt = localStorage.getItem('jwt');
-
+    
             if (jwt) {
-                // If JWT token exists, show the Logout button
+                // If JWT token exists, show the Logout button and "My Bets" button
                 authButtons.innerHTML = `
+                    <a href="/user_bets" class="btn btn-secondary me-2">My Bets</a>
                     <button class="btn btn-outline-primary" id="logout-btn" onclick="logout()">Logout</button>
                 `;
             } else {
@@ -43,7 +44,7 @@
                     <a href="/login" class="btn btn-primary">Login</a>
                 `;
             }
-
+    
             // Fetch events
             fetch('/api/events', {
                 method: 'GET',
@@ -60,18 +61,23 @@
                                     <h5 class="card-title">${event.name}</h5>
                                     <p class="card-text">${event.description}</p>
                                     <p class="card-text"><small class="text-muted">Date: ${new Date(event.date).toLocaleString()}</small></p>
-                                    <a href="/event/${event.id}" class="btn btn-primary">View Details</a>
+                                    <button class="btn btn-primary" onclick="redirectToEvent(${event.id})">View Details</button>
                                 </div>
                             </div>`;
                         container.innerHTML += eventCard;
                     });
                 });
         });
-
+    
+        function redirectToEvent(eventId) {
+            window.location.href = `/event/${eventId}`;
+        }
+    
         function logout() {
             localStorage.removeItem('jwt');
             window.location.href = '/login';
         }
     </script>
+    
 </body>
 </html>
