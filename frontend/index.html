@@ -10,9 +10,10 @@
 <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container">
-            <a class="navbar-brand" href="#">MaiBets</a>
+            <a class="navbar-brand" href="/">MaiBets</a>
+            <span id="user-balance" class="m-3"></span>
             <div id="auth-buttons" class="d-flex align-items-center">
-                <!-- Authentication buttons will be injected here -->
+                    
             </div>
         </div>
     </nav>
@@ -56,14 +57,32 @@
             const authButtons = document.getElementById('auth-buttons');
             const adminButtons = document.getElementById('admin-buttons');
             const addEventForm = document.getElementById('add-event-form');
+            const userBalance = document.getElementById('user-balance');
             const jwt = localStorage.getItem('jwt');
     
             if (jwt) {
-                // If JWT token exists, show the Logout button and "My Bets" button
+                // If JWT token exists, show the Logout button, "My Bets" button, and balance
                 authButtons.innerHTML = `
                     <a href="/user_bets" class="btn btn-secondary me-2">My Bets</a>
                     <button class="btn btn-outline-primary" id="logout-btn" onclick="logout()">Logout</button>
+                    
                 `;
+                // Fetch user data and display balance
+                fetch('/api/user/', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${jwt}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(user => {
+                    if (user.balance !== undefined) {
+                        // Display the user's balance
+                        userBalance.textContent = `Balance: $${user.balance.toFixed(2)}`;
+                    }
+                });
+
                 // Check if user is admin
                 fetch('/api/user/', {
                     method: 'GET',
@@ -129,13 +148,22 @@
             };
 
             const jwt = localStorage.getItem('jwt');
+            const eventDateValue = document.getElementById('event-date').value;
+            const eventDate = new Date(eventDateValue);
             fetch('/api/event', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${jwt}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ event: eventData })
+                body: JSON.stringify({
+                    date: eventDate.toISOString(),
+                    // data: new Date().toISOString(),
+                    description: document.getElementById('event-description').value,
+                    id: 0,
+                    name: document.getElementById('event-name').value,
+                    status: "live"
+                })
             })
             .then(response => response.json())
             .then(data => {

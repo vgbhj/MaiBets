@@ -9,7 +9,7 @@
 <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container">
-            <a class="navbar-brand" href="/events.html">MaiBets</a>
+            <a class="navbar-brand" href="/">MaiBets</a>
             <button class="btn btn-outline-primary" onclick="logout()">Logout</button>
         </div>
     </nav>
@@ -26,8 +26,16 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
-            const eventId = params.get('id');
+            let eventId = params.get('id');
             const token = localStorage.getItem('jwt');
+            const url = window.location.href; // "http://localhost:8080/event/1"
+            const regex = /\/event\/(\d+)/; // Регулярное выражение для извлечения числа после "/event/"
+            const match = url.match(regex);
+
+            if (match) {
+                eventId = match[1]; // Получаем значение из группы
+                console.log(eventId); // Вывод: "1"
+            }
 
             if (!token) {
                 window.location.href = '/login';
