@@ -9,6 +9,7 @@ import (
 	"github.com/vgbhj/MaiBets/db"
 	_ "github.com/vgbhj/MaiBets/docs"
 	"github.com/vgbhj/MaiBets/middleware"
+	"github.com/vgbhj/MaiBets/service/ticker_service"
 )
 
 func init() {
@@ -18,6 +19,7 @@ func init() {
 
 func main() {
 	router := gin.Default()
+	ticker_service.StartTicker()
 
 	// Serve static files (CSS, JS, images)
 	router.Static("/static", "./frontend/static")

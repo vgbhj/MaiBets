@@ -76,3 +76,17 @@ func GetEventIDByName(name string) (int, error) {
 
 	return eventID, nil
 }
+
+// UpdateEventStatus обновляет статус событий, у которых дата меньше или равна текущему времени
+func UpdateEventStatus() error {
+	dbConn := db.ConnectDB() // Получаем соединение с базой данных
+	defer dbConn.Close()
+	// Обновляем статус событий
+	_, err := dbConn.Exec(`
+        UPDATE event
+        SET status = 'finished'
+        WHERE date <= $1 AND status != 'finished'
+    `, time.Now())
+
+	return err
+}

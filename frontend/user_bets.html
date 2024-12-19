@@ -24,57 +24,72 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const token = localStorage.getItem('jwt');
             if (!token) {
                 window.location.href = '/login.html';
                 return;
             }
 
-            fetch('/api/bets', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    const container = document.getElementById('bets-container');
-                    container.innerHTML = '';
-
-                    if (data.length === 0) {
-                        container.innerHTML = `
-                            <div class="col-12 text-center">
-                                <p class="text-muted">You have no bets yet. Start betting to see them here!</p>
-                            </div>
-                        `;
-                        return;
+            try {
+                const betsResponse = await fetch('/api/bets', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
+                });
 
-                    data.forEach(bet => {
-                        const betCard = `
-                            <div class="col-md-6 col-lg-4">
-                                <div class="card mb-3 shadow-sm">
-                                    <div class="card-body">
-                                        <h5 class="card-title text-primary">${bet.name}</h5>
-                                        <p class="card-text">Amount: <strong>$${bet.bet_amount.toFixed(2)}</strong></p>
-                                        <p class="card-text text-muted">Date: ${new Date(bet.bet_date).toLocaleString()}</p>
-                                    </div>
-                                </div>
-                            </div>`;
-                        container.innerHTML += betCard;
-                    });
-                })
-                .catch(error => {
-                    const container = document.getElementById('bets-container');
+                const bets = await betsResponse.json();
+                const container = document.getElementById('bets-container');
+                container.innerHTML = '';
+
+                if (bets.length === 0) {
                     container.innerHTML = `
-                        <div class="col-12 text-center text-danger">
-                            <p>Failed to load bets. Please try again later.</p>
+                        <div class="col-12 text-center">
+                            <p class="text-muted">You have no bets yet. Start betting to see them here!</p>
                         </div>
                     `;
-                    console.error('Error fetching bets:', error);
-                });
+                    return;
+                }
+
+                for (const bet of bets) {
+                    const eventResponse = await fetch(`/api/event/${bet.event_id}`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!eventResponse.ok) {
+                        console.error(`Failed to fetch event with ID ${bet.event_id}`);
+                        continue;
+                    }
+
+                    const event = await eventResponse.json();
+
+                    const betCard = `
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card mb-3 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title text-primary">${event.name}</h5>
+                                    <p class="card-text">Amount: <strong>$${bet.bet_amount.toFixed(2)}</strong></p>
+                                    <p class="card-text text-muted">Date: ${new Date(bet.bet_date).toLocaleString()}</p>
+                                </div>
+                            </div>
+                        </div>`;
+                    container.innerHTML += betCard;
+                }
+            } catch (error) {
+                const container = document.getElementById('bets-container');
+                container.innerHTML = `
+                    <div class="col-12 text-center text-danger">
+                        <p>Failed to load bets. Please try again later.</p>
+                    </div>
+                `;
+                console.error('Error fetching bets:', error);
+            }
         });
 
         function logout() {
