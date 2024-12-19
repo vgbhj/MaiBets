@@ -99,7 +99,7 @@
                             <div class="card-body">
                                 <h5 class="card-title">${event.name}</h5>
                                 <p class="card-text">${event.description}</p>
-                                <p class="card-text"><small class="text-muted">Date: ${new Date(event.date).toLocaleString()}</small></p>
+                                <p class="card-text"><small class="text-muted">Date: ${new Date(event.date).toUTCString()}</small></p>
                                 <p class="card-text">Status: <strong>${event.status}</strong></p>
                                 <button class="btn btn-primary" onclick="redirectToEvent(${event.id})">View Details</button>
                             </div>

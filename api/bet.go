@@ -26,6 +26,7 @@ type BetInput struct {
 // @Param bet body BetInput true "Bet Details"
 // @Success 200 {object} models.SuccessResponse "Bet added successfully"
 // @Failure 400 {object} models.ErrorResponse "Invalid input or insufficient balance"
+// @Failure 400 {object} models.ErrorResponse "Event is finished"
 // @Failure 500 {object} models.ErrorResponse "Internal server error"
 // @Router /api/bet [post]
 // AddBet обрабатывает HTTP-запрос на добавление новой ставки
@@ -55,6 +56,19 @@ func AddBet(c *gin.Context) {
 	eventID, err := models.GetEventIDByName(betInput.EventName)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Event not found", Details: err.Error()})
+		return
+	}
+
+	// Получаем статус события
+	eventStatus, err := models.GetEventStatusByID(eventID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Could not retrieve event status", Details: err.Error()})
+		return
+	}
+
+	// Проверка, завершено ли событие
+	if eventStatus == "finished" {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Event is finished"})
 		return
 	}
 

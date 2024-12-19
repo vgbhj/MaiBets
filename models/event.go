@@ -90,3 +90,22 @@ func UpdateEventStatus() error {
 
 	return err
 }
+
+// GetEventStatusByID получает статус события по его ID
+func GetEventStatusByID(id int) (string, error) {
+	dbConn := db.ConnectDB() // Получаем соединение с базой данных
+	defer dbConn.Close()
+
+	var status string
+
+	err := dbConn.QueryRow("SELECT status FROM event WHERE id = $1", id).Scan(&status)
+	if err != nil {
+		// Выводим ошибку в лог
+		fmt.Println("Error retrieving event status by ID:", err)
+
+		// Возвращаем ошибку
+		return "", err
+	}
+
+	return status, nil
+}
