@@ -12,9 +12,7 @@
         <div class="container">
             <a class="navbar-brand" href="/">MaiBets</a>
             <span id="user-balance" class="m-3"></span>
-            <div id="auth-buttons" class="d-flex align-items-center">
-                    
-            </div>
+            <div id="auth-buttons" class="d-flex align-items-center"></div>
         </div>
     </nav>
 
@@ -27,11 +25,8 @@
             </div>
         </div>
 
-        <div id="admin-buttons" class="mt-4">
-            <!-- Button for adding events will be injected here for admin users -->
-        </div>
+        <div id="admin-buttons" class="mt-4"></div>
 
-        <!-- Add Event Form (hidden by default) -->
         <div id="add-event-form" class="mt-4" style="display:none;">
             <h3>Create a New Event</h3>
             <form id="create-event-form">
@@ -59,15 +54,13 @@
             const addEventForm = document.getElementById('add-event-form');
             const userBalance = document.getElementById('user-balance');
             const jwt = localStorage.getItem('jwt');
-    
+
             if (jwt) {
-                // If JWT token exists, show the Logout button, "My Bets" button, and balance
                 authButtons.innerHTML = `
                     <a href="/user_bets" class="btn btn-secondary me-2">My Bets</a>
                     <button class="btn btn-outline-primary" id="logout-btn" onclick="logout()">Logout</button>
-                    
                 `;
-                // Fetch user data and display balance
+
                 fetch('/api/user/', {
                     method: 'GET',
                     headers: {
@@ -78,78 +71,55 @@
                 .then(response => response.json())
                 .then(user => {
                     if (user.balance !== undefined) {
-                        // Display the user's balance
                         userBalance.textContent = `Balance: $${user.balance.toFixed(2)}`;
                     }
-                });
-
-                // Check if user is admin
-                fetch('/api/user/', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${jwt}`,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(user => {
                     if (user.access_level === 2) {
-                        // Show the "Add Event" button if the user is an admin
                         adminButtons.innerHTML = `
                             <button class="btn btn-success" onclick="toggleAddEventForm()">Add Event</button>
                         `;
                     }
                 });
             } else {
-                // If no JWT token, show the Login button
                 authButtons.innerHTML = `
                     <a href="/login" class="btn btn-primary">Login</a>
                 `;
             }
-    
-            // Fetch events
+
             fetch('/api/events', {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
-                .then(response => response.json())
-                .then(data => {
-                    const container = document.getElementById('events-container');
-                    container.innerHTML = '';
-                    data.forEach(event => {
-                        const eventCard = `
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <h5 class="card-title">${event.name}</h5>
-                                    <p class="card-text">${event.description}</p>
-                                    <p class="card-text"><small class="text-muted">Date: ${new Date(event.date).toLocaleString()}</small></p>
-                                    <button class="btn btn-primary" onclick="redirectToEvent(${event.id})">View Details</button>
-                                </div>
-                            </div>`;
-                        container.innerHTML += eventCard;
-                    });
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('events-container');
+                container.innerHTML = '';
+                data.forEach(event => {
+                    const eventCard = `
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">${event.name}</h5>
+                                <p class="card-text">${event.description}</p>
+                                <p class="card-text"><small class="text-muted">Date: ${new Date(event.date).toLocaleString()}</small></p>
+                                <p class="card-text">Status: <strong>${event.status}</strong></p>
+                                <button class="btn btn-primary" onclick="redirectToEvent(${event.id})">View Details</button>
+                            </div>
+                        </div>`;
+                    container.innerHTML += eventCard;
                 });
+            });
         });
 
         function toggleAddEventForm() {
-            // Toggle visibility of the Add Event form
             const form = document.getElementById('add-event-form');
             form.style.display = form.style.display === 'none' ? 'block' : 'none';
         }
-    
-        // Handle the form submission for creating an event
+
         document.getElementById('create-event-form').addEventListener('submit', function (event) {
             event.preventDefault();
 
-            const eventData = {
-                name: document.getElementById('event-name').value,
-                description: document.getElementById('event-description').value,
-                date: document.getElementById('event-date').value
-            };
-
-            const jwt = localStorage.getItem('jwt');
             const eventDateValue = document.getElementById('event-date').value;
             const eventDate = new Date(eventDateValue);
+            const jwt = localStorage.getItem('jwt');
             fetch('/api/event', {
                 method: 'POST',
                 headers: {
@@ -166,10 +136,9 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log(data.error)
-                if (data.error == undefined) {
+                if (data.error === undefined) {
                     alert('Event created successfully!');
-                    location.reload(); // Reload the page to show the new event
+                    location.reload();
                 } else {
                     alert('Error creating event: ' + data.error);
                 }
