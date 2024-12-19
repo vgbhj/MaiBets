@@ -14,12 +14,31 @@ import (
 func init() {
 	config.LoadEnvs()
 	db.ConnectDB()
-
 }
 
 func main() {
 	router := gin.Default()
 
+	// Serve static files (CSS, JS, images)
+	router.Static("/static", "./frontend/static")
+
+	// Load HTML templates from the frontend folder
+	router.LoadHTMLGlob("frontend/*.html")
+
+	// Frontend routes
+	router.GET("/", func(c *gin.Context) {
+		c.HTML(200, "index.html", nil)
+	})
+
+	router.GET("/login", func(c *gin.Context) {
+		c.HTML(200, "login.html", nil)
+	})
+
+	router.GET("/user_bets", middleware.CheckAuth, func(c *gin.Context) {
+		c.HTML(200, "user_bets.html", nil)
+	})
+
+	// API routes
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.POST("/api/signup", api.CreateUser)
 	router.POST("/api/login", api.Login)
@@ -29,5 +48,6 @@ func main() {
 	router.POST("/api/bet", middleware.CheckAuth, api.AddBet)
 	router.GET("/api/bets", middleware.CheckAuth, api.GetBets)
 
+	// Run the server
 	router.Run()
 }
